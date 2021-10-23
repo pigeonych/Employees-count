@@ -13,10 +13,12 @@ class App extends Component {
         super(props);
         this.state = {
             data: [
-                {name: 'John C.', salary: 800, increase: false, rise: true, id: 1},
-                {name: 'Alex M.', salary: 3000, increase: true, rise: false, id: 2},
+                {name: 'John C.', salary: 800, increase: false, rise: false, id: 1},
+                {name: 'Alex M.', salary: 3000, increase: false, rise: false, id: 2},
                 {name: 'Carl W.', salary: 5000, increase: false, rise: false, id: 3}
-            ]
+            ], 
+			term: "",
+			filter: "all"
         }
 		this.maxId = 4;
     }
@@ -81,9 +83,39 @@ class App extends Component {
 		}));
 	}
 
+	searchEmp = (items, term) => {
+		if (term.length === 0) {
+			return items;
+		}
+		return items.filter(item => {
+			return item.name.indexOf(term) > -1;
+		});
+	}
+
+	onUpdateSearch = (term) => {
+		this.setState({term});
+	}
+
+	filterPost = (items, filter) => {
+		switch(filter) {
+			case "rise": 
+				return items.filter(item => item.rise);
+			case "moreThan1000":
+				return items.filter(item => item.salary > 1000);
+			default: 
+				return items;
+		}
+	}
+
+	onUpdateFilter = (filter) => {
+		this.setState({filter});
+	}
+
     render() {
-		const allNum = this.state.data.length;
+		const {data, term, filter} = this.state;
+		const allNum = data.length;
 		const incrNum = this.state.data.filter(item => item.increase === true).length;
+		const visibleData = this.filterPost(this.searchEmp(data, term), filter);
 
         return (
             <div className="app">
@@ -92,12 +124,14 @@ class App extends Component {
 				incrNum = {incrNum}/>
     
                 <div className="search-panel">
-                    <SearchPanel/>
-                    <AppFilter/>
+                    <SearchPanel onUpdateSearch={this.onUpdateSearch}/>
+                    <AppFilter
+					filter={filter}
+					onUpdateFilter={this.onUpdateFilter}/>
                 </div>
                 
                 <EmployeesList 
-                    data={this.state.data}
+                    data={visibleData}
                     onDelete={this.deleteItem}
 					onToggleIncrease={this.onToggleIncrease}
 					onToggleRise={this.onToggleRise}/>
